@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "el-club-de-la-fuerza",
+    "slug": "el-club-de-la-fuerza",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.elclubdelafuerza"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
