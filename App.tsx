@@ -1,28 +1,13 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { Provider as PaperProvider } from 'react-native-paper';
 import AppNavigator from './src/navigation/AppNavigator';
-import HomeScreen from './src/screens/HomeScreen';
-
-const Stack = createNativeStackNavigator();
+import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Inicio"
-        screenOptions={{
-          headerStyle: { backgroundColor: '#0a0a0a' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
-        }}
-      >
-        <Stack.Screen name="Inicio" component={HomeScreen} />
-
-        <Stack.Screen name="AppNavigator" component={AppNavigator} />
-      </Stack.Navigator>
-
+    <PaperProvider>
+      <AppNavigator />
       <StatusBar style="light" />
-    </NavigationContainer>
+    </PaperProvider>
   );
 }
