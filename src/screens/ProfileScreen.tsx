@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
 
 const userStats = [
   { label: "Entrenamientos", value: "24", icon: "fitness" },
@@ -20,6 +21,19 @@ const profileOptions = [
 ];
 
 export default function ProfileScreen() {
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Cerrar Sesión',
+      '¿Estás seguro de que quieres cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar Sesión', style: 'destructive', onPress: logout },
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* Header with Profile Info */}
@@ -29,8 +43,10 @@ export default function ProfileScreen() {
             <Ionicons name="person" size={40} color="#059669" />
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>Juan Pérez</Text>
-            <Text style={styles.membershipText}>Miembro desde Enero 2024</Text>
+            <Text style={styles.userName}>{user?.name || 'Usuario'}</Text>
+            <Text style={styles.membershipText}>
+              Miembro desde {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : 'Recientemente'}
+            </Text>
             <View style={styles.membershipBadge}>
               <Ionicons name="star" size={16} color="#FCD34D" />
               <Text style={styles.membershipLabel}>Membresía Premium</Text>
@@ -104,6 +120,11 @@ export default function ProfileScreen() {
                 styles.optionItem,
                 index === profileOptions.length - 1 && styles.optionItemLast
               ]}
+              onPress={() => {
+                if (option.action === 'logout') {
+                  handleLogout();
+                }
+              }}
             >
               <Ionicons 
                 name={option.icon as any} 
