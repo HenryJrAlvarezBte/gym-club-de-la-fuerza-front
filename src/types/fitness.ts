@@ -9,7 +9,6 @@ export interface Class {
   date: string;
   time: string;
   location: string;
-  category: 'strength' | 'cardio' | 'flexibility' | 'hiit' | 'yoga' | 'pilates';
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   imageUrl?: string;
   price?: number;

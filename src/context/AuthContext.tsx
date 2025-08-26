@@ -60,57 +60,81 @@ const initialState: AuthState = {
   token: null,
 };
 
+const isWeb = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
     loadStoredAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadStoredAuth = async () => {
     try {
-      const [storedUser, storedToken, storedRefreshToken] = await Promise.all([
-        AsyncStorage.getItem('user'),
-        AsyncStorage.getItem('token'),
-        AsyncStorage.getItem('refreshToken'),
-      ]);
+      let storedUser, storedToken, storedRefreshToken;
+      if (isWeb) {
+        storedUser = window.localStorage.getItem('user');
+        storedToken = window.localStorage.getItem('token');
+        storedRefreshToken = window.localStorage.getItem('refreshToken');
+      } else {
+        [storedUser, storedToken, storedRefreshToken] = await Promise.all([
+          AsyncStorage.getItem('user'),
+          AsyncStorage.getItem('token'),
+          AsyncStorage.getItem('refreshToken'),
+        ]);
+      }
 
       if (storedUser && storedToken) {
         const user = JSON.parse(storedUser);
-        
-        // Validate token with backend
+
         try {
           const validatedUser = await AuthService.validateToken(storedToken);
           dispatch({ type: 'SET_USER', payload: validatedUser });
           dispatch({ type: 'SET_TOKEN', payload: storedToken });
         } catch (error) {
-          // Token is invalid, try to refresh
           if (storedRefreshToken) {
             try {
               const authResponse = await AuthService.refreshToken(storedRefreshToken);
-              await Promise.all([
-                AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
-                AsyncStorage.setItem('token', authResponse.token),
-                authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
-              ]);
+              if (isWeb) {
+                window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+                window.localStorage.setItem('token', authResponse.token);
+                if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
+              } else {
+                await Promise.all([
+                  AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+                  AsyncStorage.setItem('token', authResponse.token),
+                  authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
+                ]);
+              }
               dispatch({ type: 'SET_USER', payload: authResponse.user });
               dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
             } catch (refreshError) {
-              // Refresh failed, clear stored data
+              if (isWeb) {
+                window.localStorage.removeItem('user');
+                window.localStorage.removeItem('token');
+                window.localStorage.removeItem('refreshToken');
+              } else {
+                await Promise.all([
+                  AsyncStorage.removeItem('user'),
+                  AsyncStorage.removeItem('token'),
+                  AsyncStorage.removeItem('refreshToken'),
+                ]);
+              }
+              dispatch({ type: 'SET_LOADING', payload: false });
+            }
+          } else {
+            if (isWeb) {
+              window.localStorage.removeItem('user');
+              window.localStorage.removeItem('token');
+              window.localStorage.removeItem('refreshToken');
+            } else {
               await Promise.all([
                 AsyncStorage.removeItem('user'),
                 AsyncStorage.removeItem('token'),
                 AsyncStorage.removeItem('refreshToken'),
               ]);
-              dispatch({ type: 'SET_LOADING', payload: false });
             }
-          } else {
-            // No refresh token, clear stored data
-            await Promise.all([
-              AsyncStorage.removeItem('user'),
-              AsyncStorage.removeItem('token'),
-              AsyncStorage.removeItem('refreshToken'),
-            ]);
             dispatch({ type: 'SET_LOADING', payload: false });
           }
         }
@@ -126,15 +150,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (credentials: LoginCredentials) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      
+
       const authResponse = await AuthService.login(credentials);
-      
-      await Promise.all([
-        AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
-        AsyncStorage.setItem('token', authResponse.token),
-        authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
-      ]);
-      
+
+      if (isWeb) {
+        window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+        window.localStorage.setItem('token', authResponse.token);
+        if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
+      } else {
+        await Promise.all([
+          AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+          AsyncStorage.setItem('token', authResponse.token),
+          authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
+        ]);
+      }
+
       dispatch({ type: 'SET_USER', payload: authResponse.user });
       dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
     } catch (error) {
@@ -147,15 +177,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (credentials: RegisterCredentials) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      
+
       const authResponse = await AuthService.register(credentials);
-      
-      await Promise.all([
-        AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
-        AsyncStorage.setItem('token', authResponse.token),
-        authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
-      ]);
-      
+
+      if (isWeb) {
+        window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+        window.localStorage.setItem('token', authResponse.token);
+        if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
+      } else {
+        await Promise.all([
+          AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+          AsyncStorage.setItem('token', authResponse.token),
+          authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
+        ]);
+      }
+
       dispatch({ type: 'SET_USER', payload: authResponse.user });
       dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
     } catch (error) {
@@ -168,26 +204,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      
-      // Get Google access token
+
       const accessToken = await GoogleAuthService.signInAsync();
-      
+
       if (!accessToken) {
         throw new Error('Google sign-in was cancelled or failed');
       }
-      
-      // Get user info from Google
-      const googleUserInfo = await GoogleAuthService.getUserInfo(accessToken);
-      
-      // Send token to your backend for verification and user creation/login
+
+      await GoogleAuthService.getUserInfo(accessToken);
+
       const authResponse = await AuthService.loginWithGoogle(accessToken);
-      
-      await Promise.all([
-        AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
-        AsyncStorage.setItem('token', authResponse.token),
-        authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
-      ]);
-      
+
+      if (isWeb) {
+        window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+        window.localStorage.setItem('token', authResponse.token);
+        if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
+      } else {
+        await Promise.all([
+          AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+          AsyncStorage.setItem('token', authResponse.token),
+          authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
+        ]);
+      }
+
       dispatch({ type: 'SET_USER', payload: authResponse.user });
       dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
     } catch (error) {
@@ -199,24 +238,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshToken = async () => {
     try {
-      const storedRefreshToken = await AsyncStorage.getItem('refreshToken');
+      let storedRefreshToken;
+      if (isWeb) {
+        storedRefreshToken = window.localStorage.getItem('refreshToken');
+      } else {
+        storedRefreshToken = await AsyncStorage.getItem('refreshToken');
+      }
       if (!storedRefreshToken) {
         throw new Error('No refresh token available');
       }
 
       const authResponse = await AuthService.refreshToken(storedRefreshToken);
-      
-      await Promise.all([
-        AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
-        AsyncStorage.setItem('token', authResponse.token),
-        authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
-      ]);
-      
+
+      if (isWeb) {
+        window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+        window.localStorage.setItem('token', authResponse.token);
+        if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
+      } else {
+        await Promise.all([
+          AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+          AsyncStorage.setItem('token', authResponse.token),
+          authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
+        ]);
+      }
+
       dispatch({ type: 'SET_USER', payload: authResponse.user });
       dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
     } catch (error) {
       console.error('Token refresh error:', error);
-      // If refresh fails, logout the user
       await logout();
       throw error;
     }
@@ -229,7 +278,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const updatedUser = await AuthService.updateOnboardingStep(state.token, step);
-      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      if (isWeb) {
+        window.localStorage.setItem('user', JSON.stringify(updatedUser));
+      } else {
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      }
       dispatch({ type: 'UPDATE_ONBOARDING_STEP', payload: step });
     } catch (error) {
       console.error('Update onboarding step error:', error);
@@ -243,7 +296,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No token available');
       }
 
-      // This would typically include the onboarding data
       const onboardingData: OnboardingData = {
         fitnessLevel: 'beginner',
         goals: ['lose_weight', 'build_muscle'],
@@ -254,7 +306,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
 
       const updatedUser = await AuthService.completeOnboarding(state.token, onboardingData);
-      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      if (isWeb) {
+        window.localStorage.setItem('user', JSON.stringify(updatedUser));
+      } else {
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      }
       dispatch({ type: 'COMPLETE_ONBOARDING' });
     } catch (error) {
       console.error('Complete onboarding error:', error);
@@ -267,13 +323,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (state.token) {
         await AuthService.logout(state.token);
       }
-      
-      await Promise.all([
-        AsyncStorage.removeItem('user'),
-        AsyncStorage.removeItem('token'),
-        AsyncStorage.removeItem('refreshToken'),
-      ]);
-      
+
+      if (isWeb) {
+        window.localStorage.removeItem('user');
+        window.localStorage.removeItem('token');
+        window.localStorage.removeItem('refreshToken');
+      } else {
+        await Promise.all([
+          AsyncStorage.removeItem('user'),
+          AsyncStorage.removeItem('token'),
+          AsyncStorage.removeItem('refreshToken'),
+        ]);
+      }
+
       dispatch({ type: 'LOGOUT' });
     } catch (error) {
       console.error('Logout error:', error);

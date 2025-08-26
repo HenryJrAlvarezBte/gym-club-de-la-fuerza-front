@@ -1,8 +1,24 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+
+// Define the type for the tab navigator routes
+// Update this type if your tab names change
+// This is needed for navigation type safety
+
+type MainTabParamList = {
+  Inicio: undefined;
+  Clases: undefined;
+  Actividad: undefined;
+  Medidas: undefined;
+  Perfil: undefined;
+};
 
 export default function HomeScreen() {
+  // Get navigation object from React Navigation with correct type
+  const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -37,25 +53,26 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
           <View style={styles.actionsGrid}>
-            <TouchableOpacity style={styles.actionCard}>
+            {/* Fast Action: Ver Horarios */}
+            <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Clases')}>
               <Ionicons name="calendar-outline" size={24} color="#059669" />
               <Text style={styles.actionTitle}>Ver Horarios</Text>
               <Text style={styles.actionSubtitle}>Clases disponibles</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.actionCard}>
+            {/* Fast Action: Mis Planes */}
+            <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Medidas')}>
               <Ionicons name="card-outline" size={24} color="#059669" />
               <Text style={styles.actionTitle}>Mis Planes</Text>
               <Text style={styles.actionSubtitle}>Membresías</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.actionCard}>
+            {/* Fast Action: Rutinas */}
+            <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Actividad')}>
               <Ionicons name="fitness-outline" size={24} color="#059669" />
               <Text style={styles.actionTitle}>Rutinas</Text>
               <Text style={styles.actionSubtitle}>Ejercicios</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.actionCard}>
+            {/* Fast Action: Perfil */}
+            <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Perfil')}>
               <Ionicons name="person-outline" size={24} color="#059669" />
               <Text style={styles.actionTitle}>Perfil</Text>
               <Text style={styles.actionSubtitle}>Mi información</Text>

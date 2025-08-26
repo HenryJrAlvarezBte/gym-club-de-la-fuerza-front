@@ -1,10 +1,29 @@
 import { LoginCredentials, RegisterCredentials, User, AuthResponse, OnboardingData } from '../types/auth';
 
-// TODO: Replace with your actual API base URL
-const API_BASE_URL = 'https://your-backend-api.com/api';
+const API_BASE_URL = 'http://127.0.0.1:8080';
 
 export class AuthService {
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    // Mock de usuario de prueba
+    if (
+      credentials.email === 'test@club.com' &&
+      credentials.password === '123456'
+    ) {
+      return {
+        user: {
+          id: '1',
+          email: 'test@club.com',
+          name: 'Usuario Test',
+          onboardingStep: 3,
+          isOnboarded: true,
+          provider: 'email',
+          createdAt: new Date(),
+        },
+        token: 'mocked-token',
+        refreshToken: 'mocked-refresh-token',
+      };
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -125,7 +144,7 @@ export class AuthService {
       });
     } catch (error) {
       console.error('Logout error:', error);
-      // Don't throw error for logout as it's not critical
+      // No lanzar error en logout
     }
   }
 
