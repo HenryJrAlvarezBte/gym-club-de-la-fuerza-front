@@ -3,8 +3,8 @@ export interface User {
   email: string;
   name?: string;
   photoURL?: string;
-  provider: 'email' | 'google';
-  createdAt: Date;
+  provider?: 'email' | 'google'; 
+  createdAt?: Date;             
   isOnboarded?: boolean;
   onboardingStep?: number;
 }
@@ -28,9 +28,8 @@ export interface RegisterCredentials {
 }
 
 export interface AuthResponse {
-  user: User;
   token: string;
-  refreshToken?: string;
+  message: string;
 }
 
 export interface AuthContextType {

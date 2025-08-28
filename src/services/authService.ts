@@ -10,17 +10,8 @@ export class AuthService {
       credentials.password === '123456'
     ) {
       return {
-        user: {
-          id: '1',
-          email: 'test@club.com',
-          name: 'Usuario Test',
-          onboardingStep: 3,
-          isOnboarded: true,
-          provider: 'email',
-          createdAt: new Date(),
-        },
         token: 'mocked-token',
-        refreshToken: 'mocked-refresh-token',
+        message: 'Welcome test@club.com',
       };
     }
 
@@ -38,7 +29,10 @@ export class AuthService {
       }
 
       const data = await response.json();
-      return data;
+      return {
+        token: data.token,
+        message: data.message,
+      };
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -60,7 +54,10 @@ export class AuthService {
       }
 
       const data = await response.json();
-      return data;
+      return {
+        token: data.token,
+        message: data.message,
+      };
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -82,7 +79,10 @@ export class AuthService {
       }
 
       const data = await response.json();
-      return data;
+      return {
+        token: data.token,
+        message: data.message,
+      };
     } catch (error) {
       console.error('Google login error:', error);
       throw error;
@@ -126,7 +126,10 @@ export class AuthService {
       }
 
       const data = await response.json();
-      return data;
+      return {
+        token: data.token,
+        message: data.message,
+      };
     } catch (error) {
       console.error('Token refresh error:', error);
       throw error;
