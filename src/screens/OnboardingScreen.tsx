@@ -1,74 +1,65 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../context/AuthContext';
 
-export default function OnboardingScreen() {
+const OnboardingScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { user } = useAuth();
-
-  const handleNext = () => {
-    navigation.navigate('Rutina' as never);
-  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="fitness" size={80} color="#25D366" style={styles.icon} />
-        <Text style={styles.title}>¡Bienvenido a El Club de la Fuerza!</Text>
-        <Text style={styles.subtitle}>
-          Tu espacio para entrenar, mejorar y compartir tu progreso.
-        </Text>
-      </View>
-      <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-        <Text style={styles.nextButtonText}>Siguiente</Text>
-        <Ionicons name="arrow-forward" size={20} color="#fff" />
+      <Image source={require('../../assets/logo.png')} style={styles.logo} />
+      <Text style={styles.title}>Bienvenido al Gym El Club de la Fuerza</Text>
+      <Text style={styles.subtitle}>Aquí comienza tu camino hacia una versión más fuerte de vos.</Text>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => (navigation as any).navigate('Home')}
+      >
+        <Text style={styles.buttonText}>Siguiente</Text>
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    padding: 16,
+    backgroundColor: '#121212',
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  icon: {
-    marginBottom: 20,
+  logo: {
+    width: 250,
+    height: 250,
+    marginBottom: 24,
+    resizeMode: 'contain',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 20,
     color: '#fff',
+    fontWeight: '700',
+    marginBottom: 8,
     textAlign: 'center',
-    marginBottom: 12,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#ccc',
+    fontSize: 14,
+    color: '#bbbbbb',
     textAlign: 'center',
-    lineHeight: 24,
+    marginBottom: 24,
   },
-  nextButton: {
-    backgroundColor: '#25D366',
-    borderRadius: 12,
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+  button: {
+    backgroundColor: '#cc0000',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#000',
   },
-  nextButtonText: {
+  buttonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginRight: 8,
+    fontWeight: '700',
   },
 });
+
+export default OnboardingScreen;

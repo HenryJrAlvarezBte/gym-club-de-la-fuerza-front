@@ -1,283 +1,48 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
-export default function RegisterScreen({ navigation }: any) {
-  const [name, setName] = useState('');
+const RegisterScreen: React.FC = () => {
+  const { register } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register, loginWithGoogle, isLoading } = useAuth();
+  const [password2, setPassword2] = useState('');
 
-  const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+  const onSubmit = async () => {
+    if (password !== password2) {
+      alert('Las contraseñas deben coincidir');
       return;
     }
 
     try {
-      await register({ name, email, password });
+      await register({ email, password });
+      alert('Registro exitoso');
     } catch (error) {
-      Alert.alert('Error', 'Error al registrarse. Intenta de nuevo.');
-    }
-  };
-
-  const handleGoogleRegister = async () => {
-    try {
-      await loginWithGoogle();
-    } catch (error) {
-      Alert.alert('Error', 'Error al registrarse con Google. Intenta de nuevo.');
+      console.error('Registration error:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      alert(message || 'Error en registro');
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.header}>
-          <Text style={styles.title}>El Club de la Fuerza</Text>
-          <Text style={styles.subtitle}>Crea tu cuenta</Text>
-        </View>
-
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre completo"
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
-              autoCorrect={false}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Correo electrónico"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Contraseña"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            >
-              <Ionicons
-                name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                size={20}
-                color="#666"
-              />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Confirmar contraseña"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry={!showConfirmPassword}
-              autoCapitalize="none"
-            />
-            <TouchableOpacity
-              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              style={styles.eyeIcon}
-            >
-              <Ionicons
-                name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'}
-                size={20}
-                color="#666"
-              />
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={[styles.registerButton, isLoading && styles.disabledButton]}
-            onPress={handleRegister}
-            disabled={isLoading}
-          >
-            <Text style={styles.registerButtonText}>
-              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>o</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.googleButton, isLoading && styles.disabledButton]}
-            onPress={handleGoogleRegister}
-            disabled={isLoading}
-          >
-            <Ionicons name="logo-google" size={20} color="#DB4437" />
-            <Text style={styles.googleButtonText}>Continuar con Google</Text>
-          </TouchableOpacity>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>¿Ya tienes una cuenta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.linkText}>Inicia sesión aquí</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <View style={styles.container}>
+      <TextInput style={styles.input} placeholder="Correo" value={email} onChangeText={setEmail} placeholderTextColor="#bbb" />
+      <TextInput style={styles.input} placeholder="Contraseña" secureTextEntry value={password} onChangeText={setPassword} placeholderTextColor="#bbb" />
+      <TextInput style={styles.input} placeholder="Repetir contraseña" secureTextEntry value={password2} onChangeText={setPassword2} placeholderTextColor="#bbb" />
+      <TouchableOpacity style={styles.button} onPress={onSubmit}>
+        <Text style={styles.buttonText}>Registrarse</Text>
+      </TouchableOpacity>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1a1a1a',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#25D366',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#999',
-    textAlign: 'center',
-  },
-  form: {
-    width: '100%',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    height: 56,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    color: '#fff',
-    fontSize: 16,
-  },
-  eyeIcon: {
-    padding: 4,
-  },
-  registerButton: {
-    backgroundColor: '#25D366',
-    borderRadius: 12,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  registerButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#333',
-  },
-  dividerText: {
-    color: '#666',
-    marginHorizontal: 16,
-    fontSize: 14,
-  },
-  googleButton: {
-    flexDirection: 'row',
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
-    height: 56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  googleButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 12,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 32,
-  },
-  footerText: {
-    color: '#999',
-    fontSize: 14,
-  },
-  linkText: {
-    color: '#25D366',
-    fontSize: 14,
-    fontWeight: '500',
-  },
+  container: { flex: 1, justifyContent: 'center', padding: 16, backgroundColor: '#121212' },
+  input: { borderWidth: 1, borderColor: '#2a2a2a', padding: 10, marginBottom: 12, borderRadius: 8, color: '#fff', backgroundColor: '#0f0f0f' },
+  button: { backgroundColor: '#cc0000', padding: 12, borderRadius: 8, alignItems: 'center' },
+  buttonText: { color: '#fff', fontWeight: '700' },
 });
+
+export default RegisterScreen;
+
+

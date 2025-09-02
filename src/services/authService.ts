@@ -1,6 +1,7 @@
 import { LoginCredentials, RegisterCredentials, User, AuthResponse, OnboardingData } from '../types/auth';
+import { Platform } from 'react-native';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
 
 export class AuthService {
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -25,7 +26,15 @@ export class AuthService {
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        // Try to read error message from server
+        let errMsg = `Login failed (${response.status})`;
+        try {
+          const errBody = await response.json();
+          if (errBody && errBody.message) errMsg = errBody.message;
+        } catch (e) {
+          // ignore json parse errors
+        }
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
@@ -37,7 +46,7 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 
@@ -52,7 +61,14 @@ export class AuthService {
       });
 
       if (!response.ok) {
-        throw new Error('Registration failed');
+        let errMsg = `Registration failed (${response.status})`;
+        try {
+          const errBody = await response.json();
+          if (errBody && errBody.message) errMsg = errBody.message;
+        } catch (e) {
+          // ignore
+        }
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
@@ -64,7 +80,7 @@ export class AuthService {
       };
     } catch (error) {
       console.error('Registration error:', error);
-      throw error;
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 

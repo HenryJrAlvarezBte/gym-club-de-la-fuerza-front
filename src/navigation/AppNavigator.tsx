@@ -9,6 +9,8 @@ import RegisterScreen from '../screens/RegisterScreen';
 import LoadingScreen from '../screens/LoadingScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import RoutineScreen from '../screens/RoutineScreen';
+import HomeScreen from '../screens/HomeScreen';
+import BodyMeasurementsScreen from '../screens/BodyMeasurementsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,7 +27,9 @@ function OnboardingStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Rutina" component={RoutineScreen} />
+      <Stack.Screen name="BodyMeasurements" component={BodyMeasurementsScreen} />
     </Stack.Navigator>
   );
 }

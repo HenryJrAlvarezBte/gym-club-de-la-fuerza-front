@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { JWTUtils } from '../utils/jwtUtils';
 import { AuthService } from './authService';
+import { Platform } from 'react-native';
 
 class ApiClient {
   private baseURL: string;
@@ -185,4 +186,5 @@ class ApiClient {
 }
 
 // Create and export a singleton instance
-export const apiClient = new ApiClient('https://your-backend-api.com/api');
+const DEFAULT_BASE = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080';
+export const apiClient = new ApiClient(DEFAULT_BASE);
