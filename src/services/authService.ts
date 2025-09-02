@@ -32,6 +32,8 @@ export class AuthService {
       return {
         token: data.token,
         message: data.message,
+        refreshToken: data.refreshToken,
+        user: data.user,
       };
     } catch (error) {
       console.error('Login error:', error);
@@ -57,6 +59,8 @@ export class AuthService {
       return {
         token: data.token,
         message: data.message,
+        refreshToken: data.refreshToken,
+        user: data.user,
       };
     } catch (error) {
       console.error('Registration error:', error);
@@ -82,6 +86,8 @@ export class AuthService {
       return {
         token: data.token,
         message: data.message,
+        refreshToken: data.refreshToken,
+        user: data.user,
       };
     } catch (error) {
       console.error('Google login error:', error);
@@ -129,6 +135,8 @@ export class AuthService {
       return {
         token: data.token,
         message: data.message,
+        refreshToken: data.refreshToken,
+        user: data.user,
       };
     } catch (error) {
       console.error('Token refresh error:', error);

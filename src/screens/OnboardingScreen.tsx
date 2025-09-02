@@ -9,7 +9,7 @@ export default function OnboardingScreen() {
   const { user } = useAuth();
 
   const handleNext = () => {
-    navigation.navigate('Rutina' as never);
+    navigation.navigate('R' as never);
   };
 
   return (

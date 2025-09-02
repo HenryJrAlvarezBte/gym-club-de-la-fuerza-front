@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AuthContextType, AuthState, User, LoginCredentials, RegisterCredentials, OnboardingData } from '../types/auth';
+import { AuthContextType, AuthState, User, LoginCredentials, RegisterCredentials, OnboardingData, AuthResponse } from '../types/auth';
 import { AuthService } from '../services/authService';
 import { GoogleAuthService } from '../services/googleAuthService';
 
@@ -96,18 +96,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (storedRefreshToken) {
             try {
               const authResponse = await AuthService.refreshToken(storedRefreshToken);
+              const refreshedUser: User | null = authResponse.user ?? null;
+
               if (isWeb) {
-                window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+                if (refreshedUser) window.localStorage.setItem('user', JSON.stringify(refreshedUser));
                 window.localStorage.setItem('token', authResponse.token);
                 if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
               } else {
-                await Promise.all([
-                  AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
-                  AsyncStorage.setItem('token', authResponse.token),
-                  authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
-                ]);
+                const ops: Promise<any>[] = [];
+                if (refreshedUser) ops.push(AsyncStorage.setItem('user', JSON.stringify(refreshedUser)));
+                ops.push(AsyncStorage.setItem('token', authResponse.token));
+                if (authResponse.refreshToken) ops.push(AsyncStorage.setItem('refreshToken', authResponse.refreshToken));
+                await Promise.all(ops);
               }
-              dispatch({ type: 'SET_USER', payload: authResponse.user });
+
+              dispatch({ type: 'SET_USER', payload: refreshedUser });
               dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
             } catch (refreshError) {
               if (isWeb) {
@@ -153,19 +156,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const authResponse = await AuthService.login(credentials);
 
+      // Extraer email del mensaje recibido del backend
+      const email = authResponse.message.replace('Welcome ', '').trim();
+      const user: User = {
+        id: '', // Puedes dejarlo vacío o generar uno temporal
+        email,
+      };
+
       if (isWeb) {
-        window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+        window.localStorage.setItem('user', JSON.stringify(user));
         window.localStorage.setItem('token', authResponse.token);
-        if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
       } else {
         await Promise.all([
-          AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+          AsyncStorage.setItem('user', JSON.stringify(user)),
           AsyncStorage.setItem('token', authResponse.token),
-          authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
         ]);
       }
 
-      dispatch({ type: 'SET_USER', payload: authResponse.user });
+      dispatch({ type: 'SET_USER', payload: user });
       dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
     } catch (error) {
       console.error('Login error:', error);
@@ -180,19 +188,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const authResponse = await AuthService.register(credentials);
 
+      // Extraer email del mensaje recibido del backend
+      const email = authResponse.message.replace('Welcome ', '').trim();
+      const user: User = {
+        id: '',
+        email,
+      };
+
       if (isWeb) {
-        window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+        window.localStorage.setItem('user', JSON.stringify(user));
         window.localStorage.setItem('token', authResponse.token);
-        if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
       } else {
         await Promise.all([
-          AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+          AsyncStorage.setItem('user', JSON.stringify(user)),
           AsyncStorage.setItem('token', authResponse.token),
-          authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
         ]);
       }
 
-      dispatch({ type: 'SET_USER', payload: authResponse.user });
+      dispatch({ type: 'SET_USER', payload: user });
       dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
     } catch (error) {
       console.error('Registration error:', error);
@@ -215,19 +228,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const authResponse = await AuthService.loginWithGoogle(accessToken);
 
+      // Extraer email del mensaje recibido del backend
+      const email = authResponse.message.replace('Welcome ', '').trim();
+      const user: User = {
+        id: '',
+        email,
+      };
+
       if (isWeb) {
-        window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+        window.localStorage.setItem('user', JSON.stringify(user));
         window.localStorage.setItem('token', authResponse.token);
-        if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
       } else {
         await Promise.all([
-          AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+          AsyncStorage.setItem('user', JSON.stringify(user)),
           AsyncStorage.setItem('token', authResponse.token),
-          authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
         ]);
       }
 
-      dispatch({ type: 'SET_USER', payload: authResponse.user });
+      dispatch({ type: 'SET_USER', payload: user });
       dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
     } catch (error) {
       console.error('Google login error:', error);
@@ -235,6 +253,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
   };
+
+  // ...resto del código sin cambios...
 
   const refreshToken = async () => {
     try {
@@ -248,21 +268,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('No refresh token available');
       }
 
-      const authResponse = await AuthService.refreshToken(storedRefreshToken);
+              const authResponse: AuthResponse = await AuthService.refreshToken(storedRefreshToken);
+
+      // Extraer email del mensaje recibido del backend
+      const email = authResponse.message.replace('Welcome ', '').trim();
+      const user: User = {
+        id: '',
+        email,
+      };
 
       if (isWeb) {
-        window.localStorage.setItem('user', JSON.stringify(authResponse.user));
+        window.localStorage.setItem('user', JSON.stringify(user));
         window.localStorage.setItem('token', authResponse.token);
-        if (authResponse.refreshToken) window.localStorage.setItem('refreshToken', authResponse.refreshToken);
       } else {
         await Promise.all([
-          AsyncStorage.setItem('user', JSON.stringify(authResponse.user)),
+          AsyncStorage.setItem('user', JSON.stringify(user)),
           AsyncStorage.setItem('token', authResponse.token),
-          authResponse.refreshToken && AsyncStorage.setItem('refreshToken', authResponse.refreshToken),
         ]);
       }
 
-      dispatch({ type: 'SET_USER', payload: authResponse.user });
+      dispatch({ type: 'SET_USER', payload: user });
       dispatch({ type: 'SET_TOKEN', payload: authResponse.token });
     } catch (error) {
       console.error('Token refresh error:', error);
@@ -270,6 +295,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
   };
+
+  // ...resto del código igual...
 
   const updateOnboardingStep = async (step: number) => {
     try {

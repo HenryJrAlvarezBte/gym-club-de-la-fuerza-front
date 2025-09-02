@@ -30,6 +30,8 @@ export interface RegisterCredentials {
 export interface AuthResponse {
   token: string;
   message: string;
+  refreshToken?: string;
+  user?: User;
 }
 
 export interface AuthContextType {
