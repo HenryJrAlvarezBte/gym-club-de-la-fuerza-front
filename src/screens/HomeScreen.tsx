@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useAuth } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -19,12 +20,21 @@ type MainTabParamList = {
 export default function HomeScreen() {
   // Get navigation object from React Navigation with correct type
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
+  const { logout } = useAuth();
+
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>¡Bienvenido!</Text>
-        <Text style={styles.headerSubtitle}>Tu club de fitness personal</Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.headerTitle}>¡Bienvenido!</Text>
+            <Text style={styles.headerSubtitle}>Tu club de fitness personal</Text>
+          </View>
+          <TouchableOpacity style={styles.headerLogout} onPress={async () => { await logout(); navigation.navigate('Login' as never); }}>
+            <Ionicons name="log-out-outline" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Quick Stats */}
@@ -121,6 +131,12 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
+        {/* Logout Button */}
+        <View style={{ alignItems: 'center', marginTop: 12 }}>
+          <TouchableOpacity style={styles.logoutButton} onPress={async () => { await logout(); navigation.navigate('Login' as never); }}>
+            <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -136,6 +152,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 48,
     paddingBottom: 24,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerLogout: {
+    padding: 8,
   },
   headerTitle: {
     color: '#FFFFFF',
@@ -260,6 +284,17 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#059669',
     fontSize: 12,
+    fontWeight: '600',
+  },
+  logoutButton: {
+    backgroundColor: '#374151',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 14,
     fontWeight: '600',
   },
 });
