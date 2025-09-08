@@ -13,10 +13,10 @@ const BodyMeasurement: React.FC<{ onResult?: (result: string) => void }> = ({ on
 
     const imc = w / (h * h);
     let res = '';
-    if (imc < 18.5) res = 'Bien';
-    else if (imc >= 18.5 && imc < 25) res = 'Bien';
-    else if (imc >= 25 && imc < 30) res = 'Más o menos';
-    else res = 'Mal';
+    if (imc < 18.5) res = 'Bajo peso';
+    else if (imc >= 18.5 && imc < 25) res = 'Peso normal';
+    else if (imc >= 25 && imc < 30) res = 'Sobrepeso';
+    else res = 'Obesidad';
 
     setResult(res);
     if (onResult) onResult(res);
