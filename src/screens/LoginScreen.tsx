@@ -25,6 +25,23 @@ const LoginScreen: React.FC = () => {
         <Text style={styles.buttonText}>Ingresar</Text>
       </TouchableOpacity>
 
+      {/* Google Sign-In button: muestra si la integración existe en el contexto */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: '#4285F4', marginTop: 12 }]}
+        onPress={async () => {
+          try {
+            // Llamamos al método expuesto por el contexto de autenticación
+            const { loginWithGoogle } = (useAuth() as any);
+            await loginWithGoogle();
+          } catch (err) {
+            console.warn('Google login failed', err);
+            alert('Error al iniciar sesión con Google');
+          }
+        }}
+      >
+        <Text style={styles.buttonText}>Iniciar sesión con Google</Text>
+      </TouchableOpacity>
+
       <View style={styles.footerContainer}>
         <Text style={styles.footerText}>¿No tienes cuenta? </Text>
         <TouchableOpacity onPress={() => (navigation as any).navigate('Register')}>
